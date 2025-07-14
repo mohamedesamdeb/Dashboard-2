@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>لوحة التحكم</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body {
+        max-width: 100%;
+        overflow-x: hidden;
+      }
+
+      #mainContent {
+        overflow-x: hidden;
+      }
+
+      .scroll-wrapper {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .table-container {
+        width: 100%;
+        table-layout: auto;
+      }
+
+      body {
+        font-family: "Cairo", sans-serif;
+      }
+
+      .ltr {
+        direction: ltr;
+        text-align: left;
+      }
+
+      .rtl {
+        direction: rtl;
+        text-align: right;
+      }
+
+      .active-link {
+        background-color: #f9a8d4;
+        color: #831843;
+        font-weight: bold;
+        transition: all 0.3s ease;
+      }
+    </style>
+  </head>
+
+<body class="bg-gray-100 text-gray-900">
+    <!-- الخلفية السوداء عند فتح القائمة -->
+    <div
+      id="backdrop"
+      class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"
+      onclick="closeSidebar()"
+    ></div>
+
+    <!-- زر الهامبرجر في الموبايل -->
+    <button
+      id="toggleSidebar"
+      class="md:hidden fixed top-4 right-4 z-50 bg-pink-600 text-white p-2 rounded-full shadow-lg"
+    >
+      <i data-lucide="menu"></i>
+    </button>
+
+    <div class="flex flex-col md:flex-row min-h-screen w-full">
+      <!-- Sidebar -->
+      <aside
+        id="sidebar"
+        class="fixed md:relative top-0 right-0 h-full w-64 bg-white dark:bg-gray-800 p-4 space-y-3 border-r transform transition-transform duration-300 md:translate-x-0 translate-x-full z-40"
+      >
+        <!-- زر إغلاق في الموبايل -->
+        <div class="flex justify-end md:hidden mb-4">
+          <button
+            onclick="closeSidebar()"
+            class="text-gray-500 hover:text-pink-600 text-xl"
+          >
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+
+        <h2 class="text-xl font-bold text-pink-600 mb-4" id="sidebarTitle">
+          لوحة التحكم
+        </h2>
+        <nav class="space-y-2">
+          <button
+            onclick="loadPage('home')"
+            class="w-full flex items-center gap-2 p-2 rounded hover:bg-pink-100"
+          >
+            <i data-lucide="home"></i
+            ><span id="homeLabel" class="truncate">الصفحة الرئيسية</span>
+          </button>
+          <button
+            onclick="loadPage('attendance')"
+            class="w-full flex items-center gap-2 p-2 rounded hover:bg-pink-100"
+          >
+            <i data-lucide="calendar"></i
+            ><span id="attendanceLabel" class="truncate"
+              >الحضور و الانصراف</span
+            >
+          </button>
+          <button
+            onclick="loadPage('leave')"
+            class="w-full flex items-center gap-2 p-2 rounded hover:bg-pink-100"
+          >
+            <i data-lucide="plane"></i
+            ><span id="leaveLabel" class="truncate">طلبات الاجازة</span>
+          </button>
+          <button
+            onclick="loadPage('honda')"
+            class="w-full flex items-center gap-2 p-2 rounded hover:bg-pink-100"
+          >
+            <i data-lucide="settings"></i
+            ><span id="hondaLabel" class="truncate">التسكين</span>
+          </button>
+          <button
+            onclick="loadPage('stock')"
+            class="w-full flex items-center gap-2 p-2 rounded hover:bg-pink-100"
+          >
+            <i data-lucide="box"></i
+            ><span id="stockLabel" class="truncate">إضافة للمخزن</span>
+          </button>
+          <button
+            onclick="loadPage('add-employee')"
+            class="w-full flex items-center gap-2 p-2 rounded hover:bg-pink-100"
+          >
+            <i data-lucide="user-plus"></i
+            ><span id="addEmpLabel" class="truncate">أضافة موظف</span>
+          </button>
+          <button
+            onclick="loadPage('view-staff')"
+            class="w-full flex items-center gap-2 p-2 rounded hover:bg-pink-100"
+          >
+            <i data-lucide="users"></i
+            ><span id="viewStaffLabel" class="truncate">عرض الموظفين</span>
+          </button>
+          <button
+            onclick="loadPage('settings')"
+            class="w-full flex items-center gap-2 p-2 rounded hover:bg-pink-100"
+          >
+            <i data-lucide="cog"></i
+            ><span id="settingsLabel" class="truncate">الإعدادات</span>
+          </button>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <div class="flex-grow p-4 w-full" id="mainContent">
+        <header class="flex items-center justify-between mb-6 mt-16 md:mt-0">
+          <h1 id="pageTitle" class="text-2xl font-bold text-pink-700">
+            📊 الصفحة الرئيسية
+          </h1>
+        </header>
+        <section id="pageContent">
+          <p class="text-gray-600 dark:text-gray-300">
+            مرحبًا بك في لوحة التحكم.
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <script>
+      lucide.createIcons();
+
+      const toggleButton = document.getElementById("toggleSidebar");
+      const sidebar = document.getElementById("sidebar");
+      const backdrop = document.getElementById("backdrop");
+
+    toggleButton.addEventListener("click", () => {
+  sidebar.classList.remove("translate-x-full", "-translate-x-full");
+  sidebar.classList.add("md:translate-x-0");
+  backdrop.classList.remove("hidden");
+  toggleButton.classList.add("hidden");
+});
+
+
+      function closeSidebar() {
+  const lang = localStorage.getItem("lang") || "ar";
+  if (lang === "en") {
+    sidebar.classList.add("-translate-x-full");
+  } else {
+    sidebar.classList.add("translate-x-full");
+  }
+
+  backdrop.classList.add("hidden");
+  toggleButton.classList.remove("hidden");
+}
+
+
+      const loadingMessages = {
+        ar: (page) =>
+          `📄 جاري تحميل صفحة "${translations.ar.titles[page] || page}"`,
+        en: (page) =>
+          `📄 Loading page "${translations.en.titles[page] || page}"`,
+      };
+
+      const translations = {
+        ar: {
+          sidebarTitle: "لوحة التحكم",
+          homeLabel: "الصفحة الرئيسية",
+          attendanceLabel: "الحضور و الانصراف",
+          leaveLabel: "طلبات الاجازة",
+          hondaLabel: "التسكين",
+          stockLabel: "إضافة للمخزن",
+          addEmpLabel: "أضافة موظف",
+          viewStaffLabel: "عرض الموظفين",
+          settingsLabel: "الإعدادات",
+          titles: {
+            home: "📊 الصفحة الرئيسية",
+            attendance: "📅 الحضور و الانصراف",
+            leave: "📝 طلبات الاجازة",
+            honda: "🔧 التسكين",
+            stock: "📦 إضافة للمخزن",
+            "add-employee": "👤 أضافة موظف",
+            "view-staff": "👥 عرض الموظفين",
+            settings: "⚙️ الإعدادات",
+          },
+          content: {
+            home: "مرحبًا بك في لوحة التحكم.",
+            attendance:
+              "<p class='text-gray-700 dark:text-gray-200'>هنا تقدر تتابع حضور وانصراف الموظفين.</p>",
+            leave:
+              "<p class='text-gray-700 dark:text-gray-200'>طلبات الإجازة هتظهر هنا.</p>",
+            honda:
+              "<p class='text-gray-700 dark:text-gray-200'>قسم التسكين الخاص بالمولدات.</p>",
+            stock:
+              "<p class='text-gray-700 dark:text-gray-200'>أضف أو تابع مخزون المعدات.</p>",
+            "add-employee":
+              "<p class='text-gray-700 dark:text-gray-200'>نموذج لإضافة موظف جديد.</p>",
+            "view-staff":
+              "<p class='text-gray-700 dark:text-gray-200'>هنا تقدر تعرض كل بيانات الموظفين.</p>",
+            settings: `<div class='flex gap-4'><select onchange="changeLang(this.value)" class="p-2 rounded bg-gray-100 dark:bg-gray-700 text-sm"><option value='ar'>🇪🇬 عربي</option><option value='en'>🇺🇸 English</option></select></div>`,
+          },
+          filters: {
+  allOffices: "جميع المكاتب",
+  downloadCSV: "💾 تحميل ملف Excel",
+  viewImage: "📷 عرض الصورة",
+  search: "🔍 ابحث بالاسم...",
+},
+
+          tableValues: {
+            شبرا: "Downtown",
+            المهندسين: "Mohandsen",
+            "جسر السويس": "Gesr elsuiz",
+            حضور: "Login",
+            انصراف: "Log out",
+          },
+
+          
+        },
+        en: {
+          sidebarTitle: "Dashboard",
+          homeLabel: "Home",
+          attendanceLabel: "Attendance",
+          leaveLabel: "Leave requests",
+          hondaLabel: "Honda start",
+          stockLabel: "Add to stock",
+          addEmpLabel: "Add an employee",
+          viewStaffLabel: "Staff View",
+          settingsLabel: "Settings",
+          titles: {
+            home: "📊 Home",
+            attendance: "📅 Attendance",
+            leave: "📝 Leave requests",
+            honda: "🔧 Honda start",
+            stock: "📦 Add to stock",
+            "add-employee": "👤 Add an employee",
+            "view-staff": "👥 Staff View",
+            settings: "⚙️ Settings",
+          },
+          content: {
+            home: "Welcome to the dashboard.",
+            attendance:
+              "<p class='text-gray-700 dark:text-gray-200'>Here you can track employee attendance.</p>",
+            leave:
+              "<p class='text-gray-700 dark:text-gray-200'>Leave requests will appear here.</p>",
+            honda:
+              "<p class='text-gray-700 dark:text-gray-200'>Honda generator assignment section.</p>",
+            stock:
+              "<p class='text-gray-700 dark:text-gray-200'>Add or track equipment stock.</p>",
+            "add-employee":
+              "<p class='text-gray-700 dark:text-gray-200'>Form to add a new employee.</p>",
+            "view-staff":
+              "<p class='text-gray-700 dark:text-gray-200'>View all staff data here.</p>",
+            settings: `<div class='flex gap-4'><select onchange="changeLang(this.value)" class="p-2 rounded bg-gray-100 dark:bg-gray-700 text-sm"><option value='ar'>🇪🇬 Arabic</option><option value='en' selected>🇺🇸 English</option></select></div>`,
+          },
+          filters: {
+            allOffices: "All offices",
+          },
+          tableValues: {
+            شبرا: "Downtown",
+            المهندسين: "Mohandsen",
+            "جسر السويس": "Gesr elsuiz",
+            حضور: "Login",
+            انصراف: "Log out",
+          },
+
+          tableHeaders: {
+            "الوقت": ["Date", "Time"],
+            الاسم: "Name",
+            المكتب: "Office",
+            الإجراء: "Procedure",
+            "خط العرض (Latitude)": "Latitude",
+            "خط الطول (Longitude)": "Longitude",
+            "الصورة (رابط)": "Image (link)",
+            "سبب الانصراف المبكر": "Reason for early departure",
+          },
+          tableValues: {
+            حضور: "Login",
+            انصراف: "Log out",
+            شبرا: "Downtown",
+            المهندسين: "Mohandsen",
+            "جسر السويس": "Gesr elsuiz",
+          },
+          filters: {
+            allOffices: "📍 All offices",
+            downloadCSV: "💾 Download the Excel file",
+            viewImage: "📷 View image",
+            search: "🔍 Search by name...",
+          },
+        },
+      };
+
+let currentLang = localStorage.getItem("lang") || "ar";
+      
+
+      function changeLang(lang) {
+        localStorage.setItem("lang", lang);
+        currentLang = lang;
+        document.documentElement.setAttribute("lang", lang);
+        document.documentElement.setAttribute(
+          "dir",
+          lang === "ar" ? "rtl" : "ltr"
+        );
+        document.body.classList.toggle("rtl", lang === "ar");
+        document.body.classList.toggle("ltr", lang === "en");
+        
+       const toggleBtn = document.getElementById("toggleSidebar");
+const sidebar = document.getElementById("sidebar");
+
+// امسح كل الكلاسات القديمة المتعلقة بالاتجاه
+sidebar.classList.remove("left-0", "right-0", "translate-x-full", "-translate-x-full");
+
+// غيّر مكان زر الهامبرجر
+if (lang === "en") {
+  toggleBtn.classList.remove("right-4");
+  toggleBtn.classList.add("left-4");
+
+  sidebar.classList.add("left-0", "-translate-x-full");
+} else {
+  toggleBtn.classList.remove("left-4");
+  toggleBtn.classList.add("right-4");
+
+  sidebar.classList.add("right-0", "translate-x-full");
+}
+
+
+
+        Object.keys(translations[lang]).forEach((id) => {
+          const el = document.getElementById(id);
+          if (el && typeof translations[lang][id] === "string") {
+            el.textContent = translations[lang][id];
+          }
+        });
+
+        const activePage =
+          document.querySelector("#pageContent").getAttribute("data-page") ||
+          "home";
+        updatePageContent(activePage);
+
+        if (
+          document.querySelector("#pageContent").getAttribute("data-page") ===
+          "attendance"
+        ) {
+          fetchAttendanceData(); // تحديث الجدول بعد تغيير اللغة
+        }
+      }
+
+      function loadPage(page) {
+        updatePageContent(page);
+
+        // شيل التمييز من كل الأزرار
+        document
+          .querySelectorAll("nav button")
+          .forEach((btn) => btn.classList.remove("active-link"));
+
+        // حدد الزر اللي بيخص الصفحة الحالية
+        const labelId = page.replace("-", "") + "Label";
+        const labelEl = document.getElementById(labelId);
+        if (labelEl) {
+          labelEl.parentElement.classList.add("active-link");
+        }
+
+        if (window.innerWidth < 768) {
+          closeSidebar();
+        }
+      }
+
+      function updatePageContent(page) {
+        const title = translations[currentLang].titles[page] || page;
+        let content = "";
+        if (page === "attendance") {
+  const loadingMsg = currentLang === "ar" ? "⏳ جاري تحميل البيانات..." : "⏳ Loading data...";
+  content = `<div id="attendanceTable" class="py-4 text-sm text-gray-800 dark:text-white">${loadingMsg}</div>`;
+} else {
+          content =
+            translations[currentLang].content[page] ||
+            `<div class='text-gray-500 dark:text-gray-300'>${loadingMessages[
+              currentLang
+            ](page)}</div>`;
+        }
+        document.getElementById("pageTitle").textContent = title;
+        const contentElement = document.getElementById("pageContent");
+        contentElement.innerHTML = `<div class='py-4'>${content}</div>`;
+        if (page === "attendance") fetchAttendanceData();
+
+        contentElement.setAttribute("data-page", page);
+      }
+
+      window.onload = () => {
+        if (localStorage.getItem("theme") === "dark") {
+          document.documentElement.classList.add("dark");
+        }
+        changeLang(currentLang);
+        updatePageContent("home");
+      };
+
+      const techniciansMap = {
+  "محمد عصام أنور حسن": "Mohamed Essam Anwar Hassan",
+  "على احمد طنطاوى منصور": "Ali Ahmed Tantawi Mansour",
+  "شادى رأفت رفاعي محمود صالح": "Shady Raafat Refai Mahmoud Saleh",
+  "محمد حسين محمد عامر": "Mohamed Hussein Mohamed Amer",
+  "مصطفي سامى مصطفي": "Mustafa Sami Mustafa Daoud",
+  "مصطفى محمود عبد النعيم عمار": "Mustafa Mahmoud Abdel Naeem Ammar",
+  "محمود محمد عبدالحميد البليهى": "Mahmoud Mohamed Abdel Hamid Al-Buleihi",
+  "سعيد حسين على": "Saeed Hussein Ali",
+  "رافت سيد عبد الشكور": "Raafat Sayed Abdel Shakoor Abdel Khaleq",
+  "باسم نشأت صالح": "Bassem Nashat Saleh",
+  "ابانوب زغلول عازر ميخائيل": "Abanoub Zaghloul Azer Mikhail",
+  "محمد عبده توفيق ابوزيد": "Mohamed Abdo Tawfik Abu Zeid",
+  "مجدى عبد المجيد احمد عبدالرحمن": "Magdy Abdel Hamid Ahmed Abdel Rahman",
+  "أحمد عزت عبدالعزيز ابراهيم": "Ahmed Ezzat Abdel Aziz Ibrahim",
+  "احمد على عبد الحافظ مرسى": "Ahmed Ali Abdel Hafez Morsi",
+  "محمد احمد عبد الحميد احمد": "Mohamed Ahmed Abdel Hamid Ahmed",
+  "ابراهيم حسنى عبده ابراهيم": "Ibrahim Hosni Abdo Ibrahim",
+  "فوزى محمد عبد الشافى مطيش": "Fawzy Mohamed Abdel Shafi Matish",
+  "حسين هلال حسين محمد": "Hussein Hilal Hussein Mohamed",
+  "على حسن على": "Ali Hassan Ali",
+  "بلال رمضان قطب حسن": "Bilal Ramadan Qutb Hassan",
+  "هانى عبدالحميد احمد عبد الفتاح": "Hani Abdel Hamid Ahmed Abdel Fattah",
+  "محمد احمد احمد محمد احمد": "Mohamed Ahmed Ahmed Mohamed Ahmed",
+  "نادر نجيب حنا يعقوب": "Nader Naguib Hanna Yacoub",
+  "ايمن جمال جرجس ابراهيم": "Ayman Gamal Girgis Ibrahim",
+  "هيثم مصطفى مصطفى عبد اللطيف": "Haitham Mustafa Mustafa Abdel Latif"
+};
+
+
+      function fetchAttendanceData() {
+        const sheetURL =
+          "https://script.google.com/macros/s/AKfycby5QdbFnpkhnBFkl5el6B2rflE1HcCHTMzV2hERMhbll4veiAESm4ElsQf7Bey3sDzUAQ/exec";
+
+        fetch(sheetURL)
+          .then((res) => res.json())
+          .then((data) => {
+            const offices = ["شبرا", "المهندسين", "جسر السويس"];
+            let officeOptions = `<option value="">${translations[currentLang].filters.allOffices}</option>`;
+            offices.forEach((o) => {
+              const translatedOffice =
+                translations[currentLang].tableValues?.[o] || o;
+officeOptions += `<option value="${o}">${translatedOffice}</option>`;
+            });
+
+            let filters = `
+<div class="mb-4 flex flex-col md:flex-row items-center gap-4 md:gap-2 justify-start flex-wrap">
+
+    <!-- 🔍 البحث باسم الفني -->
+    <input type="text" id="searchInput" placeholder="${translations[currentLang].filters.search}"
+" 
+      class="w-full md:w-1/3 p-2 border rounded shadow text-sm text-gray-800 dark:text-white dark:bg-gray-800 dark:border-gray-600">
+    <!-- 🏢 الفلتر بالمكتب -->
+    
+   <select id="officeFilter" 
+  class="w-full md:w-1/4 p-2 border rounded shadow text-sm text-gray-800 dark:text-white dark:bg-gray-800 dark:border-gray-600">
+  ${officeOptions}
+</select>
+
+
+    <!-- 💾 زر تحميل CSV -->
+    <button onclick="exportTableToCSV('attendance.csv')" 
+      class="p-2 bg-pink-600 text-white rounded hover:bg-pink-700 text-sm shadow">
+${translations[currentLang].filters.downloadCSV}
+    </button>
+
+  </div>
+`;
+
+            const container = document.getElementById("attendanceTable");
+            if (!data || data.length === 0) {
+              container.innerHTML = "❌ لا توجد بيانات حضور حالياً.";
+              return;
+            }
+
+            let table = `
+<div class="w-full overflow-x-auto border rounded shadow min-h-[400px] h-[80vh]">
+
+<table class="min-w-max w-full bg-white dark:bg-gray-800 text-sm text-right border border-gray-300 dark:border-gray-700">
+      <thead class="bg-pink-600 text-white sticky top-0 z-10">
+        <tr>`;
+
+            // 🧠 الهيدر: لو فيه عمود وقت وتاريخ نقسمه لعمودين
+            Object.keys(data[0]).forEach((key) => {
+              if (
+                key === "التاريخ والوقت" ||
+                key.toLowerCase().includes("time")
+              ) {
+                const headers = translations[currentLang].tableHeaders[key] || [
+                  "Date",
+                  "Time",
+                ];
+                table += `<th class="px-4 py-2 text-center">📅 ${headers[0]}</th>`;
+                table += `<th class="px-4 py-2 text-center">⏰ ${headers[1]}</th>`;
+              } else {
+                const translated =
+                  translations[currentLang].tableHeaders?.[key] || key;
+                table += `<th class="px-4 py-2 text-center">${translated}</th>`;
+              }
+            });
+
+            table += `</tr></thead><tbody class="text-gray-700 dark:text-gray-200">`;
+
+            // 🧠 البيانات
+            data.forEach((row) => {
+const officeName = row["المكتب"];
+table += `<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-pink-50 dark:hover:bg-gray-700" data-office="${officeName}">`;
+
+              Object.entries(row).forEach(([key, val]) => {
+                if (
+                  key === "التاريخ والوقت" ||
+                  key.toLowerCase().includes("time")
+                ) {
+                  const date = new Date(val);
+                  const formattedDate = date.toLocaleDateString("ar-EG");
+                  const formattedTime = date.toLocaleTimeString("ar-EG", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                  table += `<td class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-center">${formattedDate}</td><td class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-center">${formattedTime}</td>`;
+                } else if (
+                  typeof val === "string" &&
+                  (val.startsWith("http://") || val.startsWith("https://")) &&
+                  (val.includes("drive.google.com") ||
+                    val.match(/\.(jpg|jpeg|png|gif|webp)(\?|$)/i))
+                ) {
+                  table += `<td class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-center text-blue-600 underline"><a href="${val}" target="_blank">📷 ${currentLang === "ar" ? "عرض الصورة" : "View Image"}</a>
+</td>`;
+                } else {
+                  let translatedVal = val;
+
+// لو القيمة موجودة في ترجمة الجداول
+if (translations[currentLang].tableValues?.[val]) {
+  translatedVal = translations[currentLang].tableValues[val];
+// لو القيمة اسم فني موجود في الماب
+} else if (currentLang === "en") {
+  // نحاول نطابق الاسم بعد تنظيف المسافات
+  if (typeof val === "string") {
+  const trimmedVal = val.trim();
+  if (techniciansMap[trimmedVal]) {
+    translatedVal = techniciansMap[trimmedVal];
+  }
+}
+
+}
+
+
+
+                  table += `<td class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-center">${translatedVal}</td>`;
+                }
+              });
+
+              table += `</tr>`;
+            });
+
+            table += `</tbody></table></div>`;
+            container.innerHTML = filters + table;
+            // 🧠 تحديد رقم عمود المكتب تلقائيًا
+            const headerCells = document.querySelectorAll(
+              "#attendanceTable table thead th"
+            );
+            let officeColumnIndex = -1;
+            headerCells.forEach((th, index) => {
+              const title = th.textContent.trim();
+              if (title.includes("المكتب")) {
+                officeColumnIndex = index;
+              }
+            });
+
+           document.getElementById("officeFilter").addEventListener("change", function () {
+  const value = this.value.trim();
+  const rows = document.querySelectorAll("#attendanceTable table tbody tr");
+  rows.forEach((row) => {
+    const office = row.getAttribute("data-office");
+    row.style.display = !value || office === value ? "" : "none";
+  });
+});
+
+
+            // 🔍 البحث بالاسم
+            document
+              .getElementById("searchInput")
+              .addEventListener("input", function () {
+                const value = this.value.trim().toLowerCase();
+                const rows = document.querySelectorAll(
+                  "#attendanceTable table tbody tr"
+                );
+                rows.forEach((row) => {
+                  const text = row.textContent.toLowerCase();
+                  row.style.display = text.includes(value) ? "" : "none";
+                });
+              });
+          })
+          .catch((err) => {
+            document.getElementById("attendanceTable").innerHTML =
+              "❌ حدث خطأ أثناء جلب البيانات.";
+            console.error("Fetch error:", err);
+          });
+      }
+
+      function exportTableToCSV(filename) {
+        const rows = document.querySelectorAll("#attendanceTable table tr");
+        let csv = [];
+        rows.forEach((row) => {
+          const cols = row.querySelectorAll("td, th");
+          let rowData = [];
+          cols.forEach((col) => {
+            rowData.push(col.innerText.replace(/,/g, "،")); // استبدال الفواصل
+          });
+          csv.push(rowData.join(","));
+        });
+        const csvContent =
+          "data:text/csv;charset=utf-8,\uFEFF" + csv.join("\n");
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", filename);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+    </script>
+  </body>
+</html>
