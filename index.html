@@ -6,6 +6,8 @@
     <title>لوحة التحكم</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
     <link
       href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap"
       rel="stylesheet"
@@ -54,7 +56,7 @@
     </style>
   </head>
 
-<body class="bg-gray-100 text-gray-900">
+  <body class="bg-gray-100 text-gray-900">
     <!-- الخلفية السوداء عند فتح القائمة -->
     <div
       id="backdrop"
@@ -173,26 +175,24 @@
       const sidebar = document.getElementById("sidebar");
       const backdrop = document.getElementById("backdrop");
 
-    toggleButton.addEventListener("click", () => {
-  sidebar.classList.remove("translate-x-full", "-translate-x-full");
-  sidebar.classList.add("md:translate-x-0");
-  backdrop.classList.remove("hidden");
-  toggleButton.classList.add("hidden");
-});
-
+      toggleButton.addEventListener("click", () => {
+        sidebar.classList.remove("translate-x-full", "-translate-x-full");
+        sidebar.classList.add("md:translate-x-0");
+        backdrop.classList.remove("hidden");
+        toggleButton.classList.add("hidden");
+      });
 
       function closeSidebar() {
-  const lang = localStorage.getItem("lang") || "ar";
-  if (lang === "en") {
-    sidebar.classList.add("-translate-x-full");
-  } else {
-    sidebar.classList.add("translate-x-full");
-  }
+        const lang = localStorage.getItem("lang") || "ar";
+        if (lang === "en") {
+          sidebar.classList.add("-translate-x-full");
+        } else {
+          sidebar.classList.add("translate-x-full");
+        }
 
-  backdrop.classList.add("hidden");
-  toggleButton.classList.remove("hidden");
-}
-
+        backdrop.classList.add("hidden");
+        toggleButton.classList.remove("hidden");
+      }
 
       const loadingMessages = {
         ar: (page) =>
@@ -239,11 +239,11 @@
             settings: `<div class='flex gap-4'><select onchange="changeLang(this.value)" class="p-2 rounded bg-gray-100 dark:bg-gray-700 text-sm"><option value='ar'>🇪🇬 عربي</option><option value='en'>🇺🇸 English</option></select></div>`,
           },
           filters: {
-  allOffices: "جميع المكاتب",
-  downloadCSV: "💾 تحميل ملف Excel",
-  viewImage: "📷 عرض الصورة",
-  search: "🔍 ابحث بالاسم...",
-},
+            allOffices: "جميع المكاتب",
+            downloadCSV: "💾 تحميل ملف Excel",
+            viewImage: "📷 عرض الصورة",
+            search: "🔍 ابحث بالاسم...",
+          },
 
           tableValues: {
             شبرا: "Downtown",
@@ -252,8 +252,6 @@
             حضور: "Login",
             انصراف: "Log out",
           },
-
-          
         },
         en: {
           sidebarTitle: "Dashboard",
@@ -303,7 +301,7 @@
           },
 
           tableHeaders: {
-            "الوقت": ["Date", "Time"],
+            الوقت: ["Date", "Time"],
             الاسم: "Name",
             المكتب: "Office",
             الإجراء: "Procedure",
@@ -328,8 +326,7 @@
         },
       };
 
-let currentLang = localStorage.getItem("lang") || "ar";
-      
+      let currentLang = localStorage.getItem("lang") || "ar";
 
       function changeLang(lang) {
         localStorage.setItem("lang", lang);
@@ -341,27 +338,30 @@ let currentLang = localStorage.getItem("lang") || "ar";
         );
         document.body.classList.toggle("rtl", lang === "ar");
         document.body.classList.toggle("ltr", lang === "en");
-        
-       const toggleBtn = document.getElementById("toggleSidebar");
-const sidebar = document.getElementById("sidebar");
 
-// امسح كل الكلاسات القديمة المتعلقة بالاتجاه
-sidebar.classList.remove("left-0", "right-0", "translate-x-full", "-translate-x-full");
+        const toggleBtn = document.getElementById("toggleSidebar");
+        const sidebar = document.getElementById("sidebar");
 
-// غيّر مكان زر الهامبرجر
-if (lang === "en") {
-  toggleBtn.classList.remove("right-4");
-  toggleBtn.classList.add("left-4");
+        // امسح كل الكلاسات القديمة المتعلقة بالاتجاه
+        sidebar.classList.remove(
+          "left-0",
+          "right-0",
+          "translate-x-full",
+          "-translate-x-full"
+        );
 
-  sidebar.classList.add("left-0", "-translate-x-full");
-} else {
-  toggleBtn.classList.remove("left-4");
-  toggleBtn.classList.add("right-4");
+        // غيّر مكان زر الهامبرجر
+        if (lang === "en") {
+          toggleBtn.classList.remove("right-4");
+          toggleBtn.classList.add("left-4");
 
-  sidebar.classList.add("right-0", "translate-x-full");
-}
+          sidebar.classList.add("left-0", "-translate-x-full");
+        } else {
+          toggleBtn.classList.remove("left-4");
+          toggleBtn.classList.add("right-4");
 
-
+          sidebar.classList.add("right-0", "translate-x-full");
+        }
 
         Object.keys(translations[lang]).forEach((id) => {
           const el = document.getElementById(id);
@@ -407,9 +407,14 @@ if (lang === "en") {
         const title = translations[currentLang].titles[page] || page;
         let content = "";
         if (page === "attendance") {
-  const loadingMsg = currentLang === "ar" ? "⏳ جاري تحميل البيانات..." : "⏳ Loading data...";
-  content = `<div id="attendanceTable" class="py-4 text-sm text-gray-800 dark:text-white">${loadingMsg}</div>`;
-} else {
+          const loadingMsg =
+            currentLang === "ar"
+              ? "⏳ جاري تحميل البيانات..."
+              : "⏳ Loading data...";
+          content = `<div id="attendanceTable" class="py-4 text-sm text-gray-800 dark:text-white">${loadingMsg}</div>`;
+        } else if (page === "honda") {
+          fetchHondaData();
+        } else {
           content =
             translations[currentLang].content[page] ||
             `<div class='text-gray-500 dark:text-gray-300'>${loadingMessages[
@@ -433,34 +438,35 @@ if (lang === "en") {
       };
 
       const techniciansMap = {
-  "محمد عصام أنور حسن": "Mohamed Essam Anwar Hassan",
-  "على احمد طنطاوى منصور": "Ali Ahmed Tantawi Mansour",
-  "شادى رأفت رفاعي محمود صالح": "Shady Raafat Refai Mahmoud Saleh",
-  "محمد حسين محمد عامر": "Mohamed Hussein Mohamed Amer",
-  "مصطفي سامى مصطفي": "Mustafa Sami Mustafa Daoud",
-  "مصطفى محمود عبد النعيم عمار": "Mustafa Mahmoud Abdel Naeem Ammar",
-  "محمود محمد عبدالحميد البليهى": "Mahmoud Mohamed Abdel Hamid Al-Buleihi",
-  "سعيد حسين على": "Saeed Hussein Ali",
-  "رافت سيد عبد الشكور": "Raafat Sayed Abdel Shakoor Abdel Khaleq",
-  "باسم نشأت صالح": "Bassem Nashat Saleh",
-  "ابانوب زغلول عازر ميخائيل": "Abanoub Zaghloul Azer Mikhail",
-  "محمد عبده توفيق ابوزيد": "Mohamed Abdo Tawfik Abu Zeid",
-  "مجدى عبد المجيد احمد عبدالرحمن": "Magdy Abdel Hamid Ahmed Abdel Rahman",
-  "أحمد عزت عبدالعزيز ابراهيم": "Ahmed Ezzat Abdel Aziz Ibrahim",
-  "احمد على عبد الحافظ مرسى": "Ahmed Ali Abdel Hafez Morsi",
-  "محمد احمد عبد الحميد احمد": "Mohamed Ahmed Abdel Hamid Ahmed",
-  "ابراهيم حسنى عبده ابراهيم": "Ibrahim Hosni Abdo Ibrahim",
-  "فوزى محمد عبد الشافى مطيش": "Fawzy Mohamed Abdel Shafi Matish",
-  "حسين هلال حسين محمد": "Hussein Hilal Hussein Mohamed",
-  "على حسن على": "Ali Hassan Ali",
-  "بلال رمضان قطب حسن": "Bilal Ramadan Qutb Hassan",
-  "هانى عبدالحميد احمد عبد الفتاح": "Hani Abdel Hamid Ahmed Abdel Fattah",
-  "محمد احمد احمد محمد احمد": "Mohamed Ahmed Ahmed Mohamed Ahmed",
-  "نادر نجيب حنا يعقوب": "Nader Naguib Hanna Yacoub",
-  "ايمن جمال جرجس ابراهيم": "Ayman Gamal Girgis Ibrahim",
-  "هيثم مصطفى مصطفى عبد اللطيف": "Haitham Mustafa Mustafa Abdel Latif"
-};
-
+        "محمد عصام أنور حسن": "Mohamed Essam Anwar Hassan",
+        "على احمد طنطاوى منصور": "Ali Ahmed Tantawi Mansour",
+        "شادى رأفت رفاعي محمود صالح": "Shady Raafat Refai Mahmoud Saleh",
+        "محمد حسين محمد عامر": "Mohamed Hussein Mohamed Amer",
+        "مصطفي سامى مصطفي": "Mustafa Sami Mustafa Daoud",
+        "مصطفى محمود عبد النعيم عمار": "Mustafa Mahmoud Abdel Naeem Ammar",
+        "محمود محمد عبدالحميد البليهى":
+          "Mahmoud Mohamed Abdel Hamid Al-Buleihi",
+        "سعيد حسين على": "Saeed Hussein Ali",
+        "رافت سيد عبد الشكور": "Raafat Sayed Abdel Shakoor Abdel Khaleq",
+        "باسم نشأت صالح": "Bassem Nashat Saleh",
+        "ابانوب زغلول عازر ميخائيل": "Abanoub Zaghloul Azer Mikhail",
+        "محمد عبده توفيق ابوزيد": "Mohamed Abdo Tawfik Abu Zeid",
+        "مجدى عبد المجيد احمد عبدالرحمن":
+          "Magdy Abdel Hamid Ahmed Abdel Rahman",
+        "أحمد عزت عبدالعزيز ابراهيم": "Ahmed Ezzat Abdel Aziz Ibrahim",
+        "احمد على عبد الحافظ مرسى": "Ahmed Ali Abdel Hafez Morsi",
+        "محمد احمد عبد الحميد احمد": "Mohamed Ahmed Abdel Hamid Ahmed",
+        "ابراهيم حسنى عبده ابراهيم": "Ibrahim Hosni Abdo Ibrahim",
+        "فوزى محمد عبد الشافى مطيش": "Fawzy Mohamed Abdel Shafi Matish",
+        "حسين هلال حسين محمد": "Hussein Hilal Hussein Mohamed",
+        "على حسن على": "Ali Hassan Ali",
+        "بلال رمضان قطب حسن": "Bilal Ramadan Qutb Hassan",
+        "هانى عبدالحميد احمد عبد الفتاح": "Hani Abdel Hamid Ahmed Abdel Fattah",
+        "محمد احمد احمد محمد احمد": "Mohamed Ahmed Ahmed Mohamed Ahmed",
+        "نادر نجيب حنا يعقوب": "Nader Naguib Hanna Yacoub",
+        "ايمن جمال جرجس ابراهيم": "Ayman Gamal Girgis Ibrahim",
+        "هيثم مصطفى مصطفى عبد اللطيف": "Haitham Mustafa Mustafa Abdel Latif",
+      };
 
       function fetchAttendanceData() {
         const sheetURL =
@@ -474,7 +480,7 @@ if (lang === "en") {
             offices.forEach((o) => {
               const translatedOffice =
                 translations[currentLang].tableValues?.[o] || o;
-officeOptions += `<option value="${o}">${translatedOffice}</option>`;
+              officeOptions += `<option value="${o}">${translatedOffice}</option>`;
             });
 
             let filters = `
@@ -537,8 +543,8 @@ ${translations[currentLang].filters.downloadCSV}
 
             // 🧠 البيانات
             data.forEach((row) => {
-const officeName = row["المكتب"];
-table += `<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-pink-50 dark:hover:bg-gray-700" data-office="${officeName}">`;
+              const officeName = row["المكتب"];
+              table += `<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-pink-50 dark:hover:bg-gray-700" data-office="${officeName}">`;
 
               Object.entries(row).forEach(([key, val]) => {
                 if (
@@ -558,27 +564,26 @@ table += `<tr class="border-b border-gray-200 dark:border-gray-700 hover:bg-pink
                   (val.includes("drive.google.com") ||
                     val.match(/\.(jpg|jpeg|png|gif|webp)(\?|$)/i))
                 ) {
-                  table += `<td class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-center text-blue-600 underline"><a href="${val}" target="_blank">📷 ${currentLang === "ar" ? "عرض الصورة" : "View Image"}</a>
+                  table += `<td class="px-4 py-2 border border-gray-300 dark:border-gray-700 text-center text-blue-600 underline"><a href="${val}" target="_blank">📷 ${
+                    currentLang === "ar" ? "عرض الصورة" : "View Image"
+                  }</a>
 </td>`;
                 } else {
                   let translatedVal = val;
 
-// لو القيمة موجودة في ترجمة الجداول
-if (translations[currentLang].tableValues?.[val]) {
-  translatedVal = translations[currentLang].tableValues[val];
-// لو القيمة اسم فني موجود في الماب
-} else if (currentLang === "en") {
-  // نحاول نطابق الاسم بعد تنظيف المسافات
-  if (typeof val === "string") {
-  const trimmedVal = val.trim();
-  if (techniciansMap[trimmedVal]) {
-    translatedVal = techniciansMap[trimmedVal];
-  }
-}
-
-}
-
-
+                  // لو القيمة موجودة في ترجمة الجداول
+                  if (translations[currentLang].tableValues?.[val]) {
+                    translatedVal = translations[currentLang].tableValues[val];
+                    // لو القيمة اسم فني موجود في الماب
+                  } else if (currentLang === "en") {
+                    // نحاول نطابق الاسم بعد تنظيف المسافات
+                    if (typeof val === "string") {
+                      const trimmedVal = val.trim();
+                      if (techniciansMap[trimmedVal]) {
+                        translatedVal = techniciansMap[trimmedVal];
+                      }
+                    }
+                  }
 
                   table += `<td class="px-4 py-2 border border-gray-300 dark:border-gray-700 bg-gray-100 dark:bg-gray-700 text-center">${translatedVal}</td>`;
                 }
@@ -601,15 +606,18 @@ if (translations[currentLang].tableValues?.[val]) {
               }
             });
 
-           document.getElementById("officeFilter").addEventListener("change", function () {
-  const value = this.value.trim();
-  const rows = document.querySelectorAll("#attendanceTable table tbody tr");
-  rows.forEach((row) => {
-    const office = row.getAttribute("data-office");
-    row.style.display = !value || office === value ? "" : "none";
-  });
-});
-
+            document
+              .getElementById("officeFilter")
+              .addEventListener("change", function () {
+                const value = this.value.trim();
+                const rows = document.querySelectorAll(
+                  "#attendanceTable table tbody tr"
+                );
+                rows.forEach((row) => {
+                  const office = row.getAttribute("data-office");
+                  row.style.display = !value || office === value ? "" : "none";
+                });
+              });
 
             // 🔍 البحث بالاسم
             document
@@ -652,6 +660,282 @@ if (translations[currentLang].tableValues?.[val]) {
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+      }
+
+      function formatDateTime(val) {
+        try {
+          const date = new Date(val);
+          const formattedDate = date.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+          });
+          const formattedTime = date.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          });
+          return { date: formattedDate, time: formattedTime };
+        } catch (e) {
+          return { date: val, time: "" };
+        }
+      }
+
+      let previousData = [];
+
+      function fetchHondaData() {
+        const sheetURL =
+          "https://script.google.com/macros/s/AKfycbxoeOxRbxrbvYiqS_gtvYJuPMDasV3rbFyg-GyZhR5Scdj30OGhU6wq1jDtfMnWV9G7ig/exec";
+        const container = document.getElementById("pageContent");
+        if (previousData.length === 0) {
+          container.innerHTML = `<div class='py-4'>⏳ جاري تحميل البيانات...</div>`;
+        }
+
+        fetch(sheetURL)
+          .then((res) => res.json())
+          .then((data) => {
+            if (!data || data.length === 0) {
+              console.warn("❌ لا توجد بيانات في الشيت.");
+              container.innerHTML = "❌ لا توجد بيانات.";
+              return;
+            }
+
+            const paired = [];
+            const openSites = {};
+
+            data.forEach((row, index) => {
+              const dateField = row["Date"];
+              const timeField = row["Time "] || row["Time"];
+              const siteID = row["Site ID"]?.trim().toLowerCase();
+              const techName = row["Resource Name"]?.trim().toLowerCase();
+              const action = row["نوع التسكين"]?.trim();
+
+              if (!dateField || !timeField || !siteID || !techName || !action) {
+                console.warn(`⚠️ صف ${index + 1} يحتوي على بيانات ناقصة.`, row);
+                return;
+              }
+
+              function convertExcelDateToJSDate(excelDate) {
+                return new Date(Math.round((excelDate - 25569) * 86400 * 1000));
+              }
+
+              let dateObj, timeObj;
+
+              if (typeof dateField === "number") {
+                dateObj = convertExcelDateToJSDate(dateField);
+              } else {
+                dateObj = new Date(dateField);
+              }
+
+              if (typeof timeField === "number") {
+                timeObj = convertExcelDateToJSDate(timeField);
+              } else {
+                timeObj = new Date(timeField);
+              }
+
+              if (isNaN(dateObj.getTime()) || isNaN(timeObj.getTime())) {
+                console.error(
+                  `❌ تنسيق خاطئ للتاريخ/الوقت في الصف ${index + 1}:`,
+                  dateField,
+                  timeField
+                );
+                return;
+              }
+
+              const fullDateTime = new Date(
+                dateObj.getFullYear(),
+                dateObj.getMonth(),
+                dateObj.getDate(),
+                timeObj.getHours(),
+                timeObj.getMinutes()
+              );
+
+              if (isNaN(fullDateTime)) {
+                console.error(
+                  `❌ تنسيق خاطئ للتاريخ/الوقت في الصف ${index + 1}:`,
+                  fullDateTime
+                );
+                return;
+              }
+
+              const date = fullDateTime.toISOString().split("T")[0]; // yyyy-mm-dd
+              const time = fullDateTime
+                .toTimeString()
+                .split(" ")[0]
+                .slice(0, 5); // hh:mm
+
+              const key = `${siteID}-${techName}`;
+
+              if (action === "بداية التسكين") {
+                if (!openSites[key]) {
+                  openSites[key] = {
+                    name: row["Resource Name"] || "-",
+                    serial: row["PG S.N."] || "-",
+                    category: row["Category"] || "-",
+                    office: row["Office"] || "-",
+                    siteID: row["Site ID"] || "-",
+                    dateIn: date,
+                    timeIn: time,
+                    TT: row["ticketNumber"] || "-",
+                    fuel: row["Fuel spear"] || "-",
+                    startDateTime: fullDateTime,
+                  };
+                } else {
+                  console.warn(
+                    `⚠️ يوجد بالفعل تسكين مفتوح لنفس المفتاح: ${key}`
+                  );
+                }
+              } else if (action === "نهاية التسكين") {
+                if (openSites[key]) {
+                  const start = openSites[key];
+                  const endDateTime = fullDateTime;
+
+                  const diff = Math.abs(endDateTime - start.startDateTime);
+                  const hours = Math.floor(diff / (1000 * 60 * 60));
+                  const minutes = Math.floor((diff / (1000 * 60)) % 60);
+                  const totalTime = `${hours}h ${minutes}m`;
+
+                  paired.push({
+                    name: start.name,
+                    serial: start.serial,
+                    category: start.category,
+                    office: start.office,
+                    siteID: start.siteID,
+                    dateIn: start.dateIn,
+                    timeIn: start.timeIn,
+                    dateOut: date,
+                    timeOut: time,
+                    totalHours: totalTime,
+                    TT: start.TT,
+                    fuel: start.fuel,
+                  });
+
+                  delete openSites[key];
+                } else {
+                  console.warn(`⚠️ نهاية تسكين بدون بداية: ${key}`);
+                }
+              }
+            });
+
+            // 🔁 ضيف التسكينات المفتوحة إلى الجدول
+            Object.values(openSites).forEach((start) => {
+              paired.push({
+                name: start.name,
+                serial: start.serial,
+                category: start.category,
+                office: start.office,
+                siteID: start.siteID,
+                dateIn: start.dateIn,
+                timeIn: start.timeIn,
+                dateOut: "🚫",
+                timeOut: "🚫",
+                totalHours: "قيد التسكين",
+                TT: start.TT,
+                fuel: start.fuel,
+              });
+            });
+            let downloadLabel =
+              currentLang === "en" ? "⬇️ Download Excel" : "⬇️ تحميل Excel";
+            let controls = `
+  <div class="flex flex-wrap gap-2 mb-4 items-center">
+    <button onclick="downloadExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow">
+      ${downloadLabel}
+    </button>
+    <input type="text" id="searchSite" placeholder="${
+      currentLang === "en" ? "🔍 Search by Site ID" : "🔍 ابحث برقم الموقع"
+    }" class="px-3 py-2 rounded border shadow w-48" oninput="filterTable()">
+    <select id="officeFilter" onchange="filterTable()" class="px-3 py-2 rounded border shadow">
+      <option value="">${
+        currentLang === "en" ? "🏢 All Offices" : "🏢 كل المكاتب"
+      }</option>
+      <option value="Gesr elsuiz">Gesr elsuiz</option>
+      <option value="DownTown">DownTown</option>
+      <option value="Mohandsen">Mohandsen</option>
+    </select>
+  </div>
+`;
+            // رسم الجدول
+            let table = `
+      <div class="w-full overflow-x-auto border rounded shadow min-h-[400px] h-[80vh] mt-4">
+        <table class="min-w-max w-full bg-white dark:bg-gray-800 text-sm text-right border border-gray-300 dark:border-gray-700">
+          <thead class="bg-pink-600 text-white sticky top-0 z-10">
+            <tr>
+              <th class="px-4 py-2 text-center">Resource Name</th>
+              <th class="px-4 py-2 text-center">PG S.N.</th>
+              <th class="px-4 py-2 text-center">Category</th>
+              <th class="px-4 py-2 text-center">Office</th>
+              <th class="px-4 py-2 text-center">Site ID</th>
+              <th class="px-4 py-2 text-center">Date in</th>
+              <th class="px-4 py-2 text-center">Time in</th>
+              <th class="px-4 py-2 text-center">Date out</th>
+              <th class="px-4 py-2 text-center">Time out</th>
+              <th class="px-4 py-2 text-center">Total Hours</th>
+              <th class="px-4 py-2 text-center">TT</th>
+              <th class="px-4 py-2 text-center">Fuel spear</th>
+            </tr>
+          </thead>
+          <tbody class="text-gray-700 dark:text-gray-200">`;
+            paired.forEach((row) => {
+              table += `
+        <tr class="border-b hover:bg-pink-50 dark:hover:bg-gray-700">
+          <td class="px-4 py-2 text-center">${row.name}</td>
+          <td class="px-4 py-2 text-center">${row.serial}</td>
+          <td class="px-4 py-2 text-center">${row.category}</td>
+          <td class="px-4 py-2 text-center">${row.office}</td>
+          <td class="px-4 py-2 text-center">${row.siteID}</td>
+          <td class="px-4 py-2 text-center">${row.dateIn}</td>
+          <td class="px-4 py-2 text-center">${row.timeIn}</td>
+          <td class="px-4 py-2 text-center">${row.dateOut}</td>
+          <td class="px-4 py-2 text-center">${row.timeOut}</td>
+          <td class="px-4 py-2 text-center">${row.totalHours}</td>
+          <td class="px-4 py-2 text-center">${row.TT}</td>
+          <td class="px-4 py-2 text-center">${row.fuel}</td>
+        </tr>`;
+            });
+            table += `</tbody></table></div>`;
+            const newData = JSON.stringify(paired.map(JSON.stringify));
+            const oldData = JSON.stringify(previousData.map(JSON.stringify));
+
+            if (newData !== oldData) {
+              container.innerHTML = controls + table;
+              previousData = paired;
+            } else {
+              console.log("🟡 لا يوجد تحديث في البيانات");
+            }
+          })
+          .catch((err) => {
+            container.innerHTML = "❌ خطأ أثناء تحميل البيانات.";
+            console.error("Fetch Honda error:", err);
+          });
+      }
+
+      fetchHondaData(); // تحميل أول مرة
+      setInterval(fetchHondaData, 10000); // كل دقيقة تحديث تلقائي
+
+      function filterTable() {
+        const search = document
+          .getElementById("searchSite")
+          .value.toLowerCase();
+        const office = document
+          .getElementById("officeFilter")
+          .value.toLowerCase();
+        const rows = document.querySelectorAll("tbody tr");
+
+        rows.forEach((row) => {
+          const siteID = row.cells[4].textContent.toLowerCase();
+          const officeName = row.cells[3].textContent.toLowerCase();
+
+          const matchesSearch = !search || siteID.includes(search);
+          const matchesOffice = !office || officeName === office;
+
+          row.style.display = matchesSearch && matchesOffice ? "" : "none";
+        });
+      }
+
+      function downloadExcel() {
+        const table = document.querySelector("table");
+        const wb = XLSX.utils.table_to_book(table, { sheet: "Report" });
+        XLSX.writeFile(wb, "تقرير_التسكين.xlsx");
       }
     </script>
   </body>
