@@ -404,38 +404,39 @@
       }
 
       function updatePageContent(page) {
-        const title = translations[currentLang].titles[page] || page;
-        let content = "";
-        if (page === "attendance") {
-          const loadingMsg =
-            currentLang === "ar"
-              ? "⏳ جاري تحميل البيانات..."
-              : "⏳ Loading data...";
-          content = `<div id="attendanceTable" class="py-4 text-sm text-gray-800 dark:text-white">${loadingMsg}</div>`;
-        } else if (page === "honda") {
-          fetchHondaData();
-        } else {
-          content =
-            translations[currentLang].content[page] ||
-            `<div class='text-gray-500 dark:text-gray-300'>${loadingMessages[
-              currentLang
-            ](page)}</div>`;
-        }
-        document.getElementById("pageTitle").textContent = title;
-        const contentElement = document.getElementById("pageContent");
-        contentElement.innerHTML = `<div class='py-4'>${content}</div>`;
-        if (page === "attendance") fetchAttendanceData();
+  const title = translations[currentLang].titles[page] || page;
+  let content = "";
 
-        contentElement.setAttribute("data-page", page);
-      }
+  if (page === "attendance") {
+    const loadingMsg =
+      currentLang === "ar" ? "⏳ جاري تحميل البيانات..." : "⏳ Loading data...";
+    content = `<div id="attendanceTable" class="py-4 text-sm text-gray-800 dark:text-white">${loadingMsg}</div>`;
+  } else if (page === "honda") {
+    content = `<div class='py-4'>⏳ جاري تحميل البيانات...</div>`;
+  } else {
+    content =
+      translations[currentLang].content[page] ||
+      `<div class='text-gray-500 dark:text-gray-300'>${loadingMessages[currentLang](page)}</div>`;
+  }
 
-      window.onload = () => {
-        if (localStorage.getItem("theme") === "dark") {
-          document.documentElement.classList.add("dark");
-        }
-        changeLang(currentLang);
-        updatePageContent("home");
-      };
+  document.getElementById("pageTitle").textContent = title;
+  const contentElement = document.getElementById("pageContent");
+  contentElement.innerHTML = `<div class='py-4'>${content}</div>`;
+  contentElement.setAttribute("data-page", page);
+
+  // ✅ تحميل البيانات حسب الصفحة
+  if (page === "attendance") fetchAttendanceData();
+
+  if (page === "honda") {
+    previousData = []; // ضروري علشان يعيد تحميل البيانات كل مرة
+    fetchHondaData();  // تحميل أولي
+    clearInterval(window.hondaInterval); // إلغاء أي مؤقت قديم
+    window.hondaInterval = setInterval(fetchHondaData, 10000); // تحديث كل 10 ثواني
+  } else {
+    clearInterval(window.hondaInterval); // لو خرج من صفحة التسكين وقف التحديث
+  }
+}
+
 
       const techniciansMap = {
         "محمد عصام أنور حسن": "Mohamed Essam Anwar Hassan",
@@ -909,9 +910,7 @@ ${translations[currentLang].filters.downloadCSV}
           });
       }
 
-      fetchHondaData(); // تحميل أول مرة
-      setInterval(fetchHondaData, 10000); // كل دقيقة تحديث تلقائي
-
+     
       function filterTable() {
         const search = document
           .getElementById("searchSite")
